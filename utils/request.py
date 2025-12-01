@@ -44,3 +44,21 @@ def update_schedule(id: int):
     except httpx.HTTPStatusError as e:
         print(f"Error en la petición: {e.response.status_code}")
         return {}
+
+
+def delete_schedules_bulk(ids: list):
+    """Elimina múltiples horarios en grupo"""
+    TOKEN: str = st.session_state["access_token"]
+    headers = {"Authorization": f"Bearer {TOKEN}"}
+    deleted_count = 0
+    
+    for id in ids:
+        url = f"{URL_BASE}/medical_appointment_scheduler/scheduler_update/{id}"
+        try:
+            response = httpx.delete(url, headers=headers)
+            response.raise_for_status()
+            deleted_count += 1
+        except httpx.HTTPStatusError as e:
+            print(f"Error eliminando id {id}: {e.response.status_code}")
+    
+    return {"deleted": deleted_count, "total": len(ids)}
