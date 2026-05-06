@@ -124,44 +124,38 @@ def show_schedule_summary(dates, day_list):
     with st.container(border=True):
         st.header("📅 Horarios habilitados por día", divider=True)
         
-        # Ordenar días
-        day_order = {"Lunes": 0, "Martes": 1, "Miercoles": 2, "Jueves": 3, "Viernes": 4}
-        groups = sorted(dates.groups.keys(), key=lambda x: day_order.get(day_list[x], 99))
+        # Todos los días de la semana en orden
+        all_days = ["Lunes", "Martes", "Miercoles", "Jueves", "Viernes"]
+        groups = list(dates.groups.keys())
         
-        if len(groups) > 0:
-            # Obtener todas las horas únicas y ordenarlas
-            all_hours = set()
-            day_hours = {}
-            
-            for day_key in groups:
-                day_name = day_list[day_key]
-                group_data = dates.get_group(day_key)
-                hours_list = [h[:5] if len(h) > 5 else h for h in group_data["Hora"].tolist()]
-                day_hours[day_name] = set(hours_list)
-                all_hours.update(hours_list)
-            
-            all_hours = sorted(list(all_hours))
-            
+        # Obtener todas las horas únicas y ordenarlas
+        all_hours = set()
+        day_hours = {}
+        
+        # Inicializar todos los días con sets vacíos
+        for day_name in all_days:
+            day_hours[day_name] = set()
+        
+        # Llenar con las horas de los días que tienen horarios
+        for day_key in groups:
+            day_name = day_list[day_key]
+            group_data = dates.get_group(day_key)
+            hours_list = [h[:5] if len(h) > 5 else h for h in group_data["Hora"].tolist()]
+            day_hours[day_name] = set(hours_list)
+            all_hours.update(hours_list)
+        
+        all_hours = sorted(list(all_hours))
+        
+        if len(all_hours) > 0:
             # Crear DataFrame para la tabla
             table_data = []
             for hour in all_hours:
                 row = {"Hora": hour}
-                for day_key in groups:
-                    day_name = day_list[day_key]
+                for day_name in all_days:
                     row[day_name] = "✅" if hour in day_hours[day_name] else "—"
                 table_data.append(row)
             
             summary_df = pd.DataFrame(table_data)
-            
-            # Mostrar resumen con métricas
-            cols = st.columns(len(groups))
-            for idx, day_key in enumerate(groups):
-                day_name = day_list[day_key]
-                count = len(day_hours[day_name])
-                with cols[idx]:
-                    st.metric(label=day_name, value=f"{count} horarios")
-            
-            st.divider()
             
             # Mostrar tabla estilizada
             st.dataframe(
@@ -170,7 +164,7 @@ def show_schedule_summary(dates, day_list):
                 use_container_width=True,
                 column_config={
                     "Hora": st.column_config.TextColumn("🕐 Hora", width="small"),
-                    **{day_list[dk]: st.column_config.TextColumn(day_list[dk], width="small") for dk in groups}
+                    **{day: st.column_config.TextColumn(day, width="small") for day in all_days}
                 }
             )
         else:
