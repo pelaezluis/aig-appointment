@@ -33,6 +33,7 @@ def create_schedule(day: str, hours: list):
         print(f"Error en la petición: {e.response.status_code}")
         return {}
 
+
 def update_schedule(id: int):
     TOKEN: str = st.session_state["access_token"]
     url = f"{URL_BASE}/medical_appointment_scheduler/scheduler_update/{id}"
