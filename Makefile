@@ -1,4 +1,4 @@
 .PHONY: run
 
 run:
-	streamlit run app.py
+	uv run streamlit run app.py

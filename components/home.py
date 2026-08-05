@@ -1,11 +1,8 @@
 import pandas as pd
 import streamlit as st
-import os
 from time import sleep
 
-os.system("cls")
-
-from utils.request import create_schedule, get_schedule, update_schedule, delete_schedules_bulk
+from utils.request import create_schedule, get_schedule, delete_schedules_bulk
 
 
 def home():
@@ -14,16 +11,21 @@ def home():
     # print(response, 'en home')
     day_list = response["meta"]["day"]
     schedule = pd.DataFrame(response["data"])
-    schedule["day_name"] = schedule["day"].apply(lambda x: day_list[x])
-    schedule["disabled"] = schedule["disabled"].apply(lambda x: not x)
-    dates = schedule.groupby("day")
-    schedule.columns = ["id", "Numero Día", "Hora", "Estado", "Día"]
     hours = ["09:00:00", "09:30:00", "10:00:00", "10:30:00"]
 
     # Crear horarios
     create_schedule_view(hours)
     st.container(height=50, border=False)
-    
+
+    if schedule.empty:
+        st.info("No hay horarios activados actualmente. Activa horarios en la sección de arriba.")
+        return
+
+    schedule["day_name"] = schedule["day"].apply(lambda x: day_list[x])
+    schedule["disabled"] = schedule["disabled"].apply(lambda x: not x)
+    dates = schedule.groupby("day")
+    schedule.columns = ["id", "Numero Día", "Hora", "Estado", "Día"]
+
     # Sección de resumen de horarios habilitados por día
     show_schedule_summary(dates, day_list)
     st.container(height=50, border=False)
